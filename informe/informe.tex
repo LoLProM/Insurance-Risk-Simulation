@@ -1,0 +1,186 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath}
+\usepackage{amssymb}
+\title{SimulationProject}
+\author{Mauricio Sunde}
+\date{April 2025}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+
+Este proyecto tiene como objetivo simular un modelo de riesgo de seguros para estimar la probabilidad de que una compañía aseguradora no entre en bancarrota durante un periodo de tiempo $[0, T]$.
+
+El modelo está basado en el capítulo 7.6 del libro \textit{Simulation} de Sheldon M. Ross. En este modelo, los asegurados generan reclamos aleatoriamente de acuerdo con un proceso de Poisson, se inscriben nuevos clientes y los existentes abandonan la compañía según procesos estocásticos. Cada cliente paga una prima fija por unidad de tiempo. El capital de la compañía se ve afectado por estos flujos, y buscamos estimar por simulación la probabilidad de no quiebra. Con este proyecto buscamos simular la evolucion del capital de una compañia de seguros que enfrenta reclamaciones aleatorias, entradas y salidas de clientes, y genera ingresos constantes. Analizaremos el impacto de los parámetros clave (tasas de reclamos, entradas y salidas de clientes, capital inicial, primas, etc.) en la probabilidad de ruina. Se evaluara la sensibilidad del modelo ante distintas distribuciones de montos de reclamos y se validara el comportamiento del sistema mediante simulación de múltiples escenarios para apoyar decisiones de gestión de riesgo. Con una implementacion de un modelo de simulacion de eventos discretos en Python se llevara a cabo todo este trabajo.
+
+Las variables clave del modelo son:
+
+\begin{itemize}
+    \item $n(t)$: número de asegurados en el instante $t$
+    \item $a(t)$: capital de la aseguradora en el instante $t$
+    \item $\lambda$: tasa de generación de reclamos por cliente
+    \item $F$: distribución del monto de los reclamos
+    \item $\nu$: tasa de llegada de nuevos clientes
+    \item $\mu$: tasa de salida de clientes
+    \item $c$: tasa de ingreso por prima por cliente
+    \item $T$: tiempo final de simulación
+\end{itemize}
+% --- Sección 3: Resultados y Experimentos ---
+\section{Resultados y Experimentos}
+
+\subsection{Hallazgos de la simulación}
+A partir de la simulación de 1000 corridas del modelo de riesgo para una compañía aseguradora, se obtuvo una probabilidad estimada de no ruina de aproximadamente 0.84 para un horizonte temporal de $T = 100$, con los siguientes parámetros base:
+
+\begin{itemize}
+  \item Capital inicial: $a_0 = 1000$
+  \item Número inicial de asegurados: $n_0 = 10$
+  \item Tasa de ingreso de asegurados: $\nu = 0.5$
+  \item Tasa de salida de asegurados: $\mu = 0.05$
+  \item Tasa de reclamos por asegurado: $\lambda = 0.1$
+  \item Distribución de montos de reclamos: Exponencial con media 100
+  \item Prima pagada por asegurado por unidad de tiempo: $c = 1.0$
+\end{itemize}
+
+En general, la mayoría de las simulaciones mantuvieron el capital en valores positivos, pero en un número no despreciable de casos ($\sim$16\%) se observó una ruina financiera, es decir, el capital se volvió negativo por efecto de un reclamo elevado o una acumulación de reclamos sucesivos.
+
+\subsection{Interpretación de los resultados}
+La alta probabilidad de no ruina bajo los parámetros anteriores indica que la empresa, en condiciones normales, logra generar suficientes ingresos por primas para cubrir los reclamos esperados. Sin embargo, debido a la aleatoriedad en los montos y tiempos de los reclamos, sigue existiendo un riesgo latente de insolvencia.
+
+Este comportamiento reproduce fielmente la variabilidad inherente a los procesos de seguros, en donde incluso una empresa bien capitalizada puede quebrar si ocurren eventos adversos extremos.
+
+\subsection{Hipótesis extraídas de los resultados}
+
+A partir de los resultados de las simulaciones, proponemos las siguientes hipótesis estadísticas:
+
+\begin{itemize}
+    \item \textbf{H1 (Capital inicial):}
+    \[
+    H_0: \frac{\partial \mathbb{P}(\text{ruina})}{\partial a_0} = 0 
+    \quad \text{vs.} \quad 
+    H_1: \frac{\partial \mathbb{P}(\text{ruina})}{\partial a_0} < 0
+    \]
+    \textit{Interpretación:} La probabilidad de ruina disminuye cuando el capital inicial \( a_0 \) aumenta.
+\end{itemize}
+
+\subsection{Experimentos realizados para validar la hipótesis H1 y análisis estadístico}
+
+Se realizaron múltiples experimentos variando los parámetros clave:
+
+
+Cada experimento consistió en 1000 corridas independientes
+
+\begin{itemize}
+    \item \textbf{Hipótesis nula (H\textsubscript{0}):} El capital inicial \( a_0 \) no influye en la probabilidad de ruina.
+    \item \textbf{Hipótesis alternativa (H\textsubscript{1}):} A mayor \( a_0 \), menor es la probabilidad de ruina.
+\end{itemize}
+
+Se realizó una regresión logística para modelar la probabilidad de ruina como función del capital inicial \( a_0 \). El modelo utilizado fue el siguiente:
+
+\[
+\text{logit}(\mathbb{P}(\text{ruina})) = \beta_0 + \beta_1 a_0
+\]
+
+Los resultados del ajuste fueron los siguientes:
+
+\begin{itemize}
+    \item Coeficiente estimado para \( a_0 \): \( \hat{\beta}_1 = -0.0272 \)
+    \item Valor p asociado: \( p < 0.0001 \)
+    \item Intervalo de confianza del 95\% para \( \beta_1 \): \([-0.0355, -0.0189]\)
+\end{itemize}
+
+El coeficiente negativo indica que un mayor capital inicial se asocia con una menor probabilidad de ruina, y el valor p indica que esta asociación es estadísticamente significativa.
+
+Dado que el coeficiente es negativo y estadísticamente significativo, \textbf{rechazamos la hipótesis nula} y aceptamos la hipótesis alternativa:
+
+\begin{center}
+    \textbf{Existe evidencia estadística significativa de que un mayor capital inicial disminuye la probabilidad de ruina.}
+\end{center}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.6\textwidth]{probabilidad_ruina_vs_capital.png}
+    \caption{Relación entre capital inicial y probabilidad de ruina}
+\end{figure}
+
+
+\subsection{Análisis de parada de la simulación}
+La simulación se detiene cuando se alcanza el tiempo máximo $T$, o cuando ocurre la ruina (capital negativo). Este enfoque es coherente con la dinámica de eventos discretos, donde el sistema evoluciona a través de eventos aleatorios (entradas, salidas y reclamos), y el tiempo avanza en saltos entre eventos.
+
+% --- Sección 4: Modelo Matemático ---
+\section{Modelo Matemático}
+
+\subsection{Descripción del modelo probabilístico}
+
+El modelo propuesto se basa en un sistema de eventos discretos en tiempo continuo, donde la dinámica de evolución está determinada por procesos de Poisson y variables aleatorias exponenciales. A continuación se describen los componentes principales del sistema:
+
+\begin{itemize}
+    \item \textbf{Llegada de asegurados:} Los nuevos asegurados ingresan a la compañía según un proceso de Poisson con tasa $\nu$.
+    
+    \item \textbf{Salida de asegurados:} Cada asegurado puede abandonar la compañía de manera independiente, con un tiempo de permanencia que sigue una distribución exponencial con parámetro $\mu$ (tasa de salida).
+    
+    \item \textbf{Generación de reclamos:} Cada asegurado genera reclamos de acuerdo con un proceso de Poisson con tasa $\lambda$.
+    
+    \item \textbf{Monto de los reclamos:} Cada reclamo tiene un monto aleatorio que sigue una distribución $F$, que para este modelo es una distribución exponencial con media 100, es decir, $F \sim \text{Exp}(1/100)$.
+    
+    \item \textbf{Ingreso por primas:} Cada asegurado paga una prima constante $c$ por unidad de tiempo, lo que representa el ingreso regular de la compañía.
+\end{itemize}
+
+El estado del sistema en el tiempo se representa mediante la variable $(n(t), a(t))$, donde:
+
+\begin{itemize}
+    \item $n(t)$ es el número de asegurados activos en el instante $t$.
+    \item $a(t)$ es el capital actual de la compañía en el instante $t$.
+\end{itemize}
+
+El tiempo avanza entre eventos, que corresponden a:
+
+\begin{enumerate}
+    \item Llegada de un nuevo asegurado.
+    \item Salida de un asegurado existente.
+    \item Generación de un nuevo reclamo.
+\end{enumerate}
+
+Cada evento modifica el estado del sistema de forma estocástica, afectando ya sea la población de asegurados o el capital disponible, lo que permite modelar el riesgo financiero y la probabilidad de ruina bajo distintos escenarios.
+
+
+
+\subsection{Supuestos y restricciones}
+\begin{itemize}
+\item Todos los eventos son mutuamente independientes.
+\item Las tasas de llegada, salida y reclamos son constantes en el tiempo.
+\item El capital de la compañía solo cambia en los momentos de eventos.
+\item No se considera inflación, impuestos, ni costos operativos adicionales.
+\end{itemize}
+
+\subsection{Comparación con los resultados experimentales}
+Los resultados de la simulación mostraron un comportamiento coherente con el modelo teórico. En particular:
+
+\begin{itemize}
+\item La probabilidad de ruina disminuyó al aumentar el capital inicial, como se predice analíticamente.
+\item La sostenibilidad financiera mejoró al incrementar las primas o la llegada de nuevos clientes.
+\item Los riesgos aumentaron al incrementar la frecuencia y severidad de los reclamos.
+\end{itemize}
+
+Estos resultados validan tanto el diseño del modelo como su implementación computacional.
+
+% --- Sección 5: Conclusiones ---
+\section{Conclusiones}
+
+La simulación del modelo de riesgo para una compañía aseguradora permitió evaluar el comportamiento del capital bajo diferentes escenarios. A partir de los resultados obtenidos se concluye lo siguiente:
+
+\begin{itemize}
+  \item La probabilidad de no ruina es altamente sensible al capital inicial y a los parámetros del modelo, como la tasa de entrada de asegurados, la tasa de reclamos y el valor de las primas.
+  \item Un capital inicial suficiente y una prima adecuada permiten que el sistema sea sostenible en el tiempo, incluso ante cierta variabilidad en los reclamos.
+  \item La aleatoriedad intrínseca en los procesos de seguros hace necesario el uso de simulación para estimar de forma robusta el riesgo de ruina, ya que métodos analíticos pueden resultar inadecuados en situaciones complejas.
+  \item Los experimentos realizados permiten extraer hipótesis útiles para la toma de decisiones, como la identificación de umbrales críticos para los parámetros del sistema.
+\end{itemize}
+
+El modelo propuesto, si bien simplificado, captura los aspectos esenciales de la dinámica de una aseguradora y puede ser extendido fácilmente para incorporar nuevos factores, como distribución más realistas de los reclamos, cambios estacionales o políticas de reaseguro.
+
+
+
+
+\end{document}
